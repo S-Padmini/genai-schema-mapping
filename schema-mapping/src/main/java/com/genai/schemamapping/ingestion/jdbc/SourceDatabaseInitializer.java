@@ -37,8 +37,9 @@ public class SourceDatabaseInitializer implements CommandLineRunner {
             System.out.println("Source database initialized successfully!");
 
             // Extract metadata
-            metadataExtractionService.extractTables();
-
+if(metadataExtractionService.countTables()==0){
+    metadataExtractionService.extractTables();
+}
         }
     }
 }

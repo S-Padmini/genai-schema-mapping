@@ -14,7 +14,7 @@ public class SourceDatabaseConfig {
     public DataSource sourceDataSource() {
 
         return DataSourceBuilder.create()
-                .url("jdbc:h2:mem:sourcedb")
+                .url("jdbc:h2:file:./data/sourcedb")
                 .username("sa")
                 .password("")
                 .driverClassName("org.h2.Driver")

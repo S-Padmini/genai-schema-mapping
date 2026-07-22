@@ -8,9 +8,7 @@ import com.genai.schemamapping.repository.SourceTableRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.Set;
 
 @Service
@@ -52,16 +50,14 @@ public class MetadataExtractionService {
 
             Connection connection =
                     jdbcConnectionService.getConnection(
-                            "jdbc:h2:mem:sourcedb",
+                            "jdbc:h2:file:./data/sourcedb",
                             "sa",
                             ""
                     );
 
 
             System.out.println("CONNECTED DATABASE");
-            System.out.println(
-                    connection.getMetaData().getURL()
-            );
+            System.out.println(connection.getMetaData().getURL());
 
 
             DatabaseMetaData metadata =
@@ -93,9 +89,9 @@ public class MetadataExtractionService {
 
 
                 System.out.println(
-                        "\nTABLE FOUND : "
-                                + tableName
+                        "\nTABLE FOUND : " + tableName
                 );
+
 
 
                 SourceTable sourceTable =
@@ -127,24 +123,20 @@ public class MetadataExtractionService {
 
 
                     String columnName =
-                            columns.getString(
-                                    "COLUMN_NAME"
-                            );
+                            columns.getString("COLUMN_NAME");
 
 
                     String dataType =
-                            columns.getString(
-                                    "TYPE_NAME"
+                            columns.getString("TYPE_NAME");
+
+
+
+                    String sampleValue =
+                            extractSampleValue(
+                                    connection,
+                                    tableName,
+                                    columnName
                             );
-
-
-
-                    System.out.println(
-                            "COLUMN : "
-                                    + columnName
-                                    + " TYPE : "
-                                    + dataType
-                    );
 
 
 
@@ -152,18 +144,17 @@ public class MetadataExtractionService {
                             new SourceColumn();
 
 
-                    sourceColumn.setColumnName(
-                            columnName
-                    );
+                    sourceColumn.setColumnName(columnName);
 
-
-                    sourceColumn.setDataType(
-                            dataType
-                    );
-
+                    sourceColumn.setDataType(dataType);
 
                     sourceColumn.setBusinessDescription(
                             "Extracted column metadata"
+                    );
+
+
+                    sourceColumn.setSampleValue(
+                            sampleValue
                     );
 
 
@@ -172,8 +163,19 @@ public class MetadataExtractionService {
                     );
 
 
-                    sourceColumnRepository.save(
-                            sourceColumn
+                    sourceColumnRepository.save(sourceColumn);
+
+
+
+                    System.out.println(
+                            "COLUMN : "
+                            + columnName
+                            + 
+                            " TYPE : "
+                            + dataType
+                            +
+                            " SAMPLE : "
+                            + sampleValue
                     );
 
                 }
@@ -190,7 +192,7 @@ public class MetadataExtractionService {
 
 
             System.out.println(
-                    "\nMetadata extraction completed successfully!"
+                    "Sample data extraction completed successfully!"
             );
 
 
@@ -203,4 +205,81 @@ public class MetadataExtractionService {
 
     }
 
+
+
+    private String extractSampleValue(
+            Connection connection,
+            String tableName,
+            String columnName
+    ) {
+
+
+        StringBuilder values =
+                new StringBuilder();
+
+
+        try {
+
+
+            String query =
+                    "SELECT "
+                    + columnName +
+                    " FROM "
+                    + tableName +
+                    " LIMIT 5";
+
+
+            Statement statement =
+                    connection.createStatement();
+
+
+            ResultSet resultSet =
+                    statement.executeQuery(query);
+
+
+
+            while(resultSet.next()) {
+
+
+                Object value =
+                        resultSet.getObject(1);
+
+
+                if(value != null) {
+
+                    if(values.length() > 0)
+                        values.append(",");
+
+
+                    values.append(value);
+
+                }
+
+            }
+
+
+            resultSet.close();
+
+            statement.close();
+
+
+        }
+        catch(Exception e){
+
+            System.out.println(
+                    "Sample extraction failed for "
+                    + columnName
+            );
+
+        }
+
+
+        return values.toString();
+
+    }
+public long countTables(){
+
+    return sourceTableRepository.count();
+
+}
 }
