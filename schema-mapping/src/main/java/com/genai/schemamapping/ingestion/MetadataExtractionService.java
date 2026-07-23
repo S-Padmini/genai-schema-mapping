@@ -270,12 +270,8 @@ public class MetadataExtractionService {
                     "Sample extraction failed for "
                     + columnName
             );
-
         }
-
-
         return values.toString();
-
     }
 public long countTables(){
 
