@@ -1,0 +1,16 @@
+Customer Master Data Definition
+
+CUSTOMER_ID:
+Unique identifier assigned to every customer.
+
+CUSTOMER_NAME:
+Stores the full name of the customer.
+
+CUSTOMER_TYPE:
+Defines whether the customer is Retail or Wholesale.
+
+EMAIL:
+Stores customer email address.
+
+CITY:
+Stores customer location information.
